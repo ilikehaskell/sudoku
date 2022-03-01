@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from pprint import pprint
+import random
 import sys, pygame as pg
-from solve import Solution 
+from solve import Solution, solve_board
 import copy
 
 
@@ -50,7 +52,7 @@ def draw_grid(grid):
 
 original_board = [[".",".","9","7","4","8",".",".","."],["7",".",".",".",".",".",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7",".",".",".","2","4","."],[".","6","4",".","1",".","5","9","."],[".","9","8",".",".",".","3",".","."],[".",".",".","8",".","3",".","2","."],[".",".",".",".",".",".",".",".","6"],[".",".",".","2","7","5","9",".","."]]
 # board = board = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
-original_board = [['.', '.', '.', '.', '4', '8', '6', '3', '2'], ['.', '.', '3', '6', '5', '2', '4', '1', '9'], ['4', '2', '6', '1', '3', '9', '8', '7', '5'], ['3', '5', '7', '9', '8', '6', '2', '4', '1'], ['2', '6', '4', '3', '1', '7', '5', '9', '8'], ['1', '9', '8', '5', '2', '4', '3', '6', '7'], ['9', '7', '5', '8', '6', '3', '1', '2', '4'], ['8', '3', '2', '4', '9', '1', '7', '5', '6'], ['6', '4', '1', '2', '7', '5', '9', '8', '3']]
+# original_board = [['.', '.', '.', '.', '4', '8', '6', '3', '2'], ['.', '.', '3', '6', '5', '2', '4', '1', '9'], ['4', '2', '6', '1', '3', '9', '8', '7', '5'], ['3', '5', '7', '9', '8', '6', '2', '4', '1'], ['2', '6', '4', '3', '1', '7', '5', '9', '8'], ['1', '9', '8', '5', '2', '4', '3', '6', '7'], ['9', '7', '5', '8', '6', '3', '1', '2', '4'], ['8', '3', '2', '4', '9', '1', '7', '5', '6'], ['6', '4', '1', '2', '7', '5', '9', '8', '3']]
 
 @dataclass
 class GameState:
@@ -58,8 +60,13 @@ class GameState:
 
 gameState = GameState()
 
+def remove_random_squares(board, num = 10):
+    to_be_removed = random.sample(range(81), num)
+    for square in to_be_removed:
+        board[square%9][square//9] = '.'
+    return board
 
-class Lisener:
+class DrawingListener:
     def __init__(self) -> None:
         self.no_calls = 0
     def grid_changed_event(self, grid):
@@ -74,26 +81,24 @@ def get_events():
         if event.type == pg.QUIT:sys.exit()
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_d:
-                lisner = Lisener()
-                Solution(gameState.board, lisner).solveSudoku()
-                print(gameState.board)
-                print(lisner.no_calls)
+                listener = DrawingListener()
+                solution_board = solve_board(Solution.DFS, gameState.board, listener)
+                gameState.board = solution_board
             if event.key == pg.K_b:
-                lisner = Lisener()
-                solution = Solution(gameState.board, lisner)
-                solution.BFS()
-                gameState.board = solution.board
-                print(gameState.board)
-                print(lisner.no_calls)
+                listener = DrawingListener()
+                solution_board = solve_board(Solution.BFS, gameState.board, listener)
+                gameState.board = solution_board
+
             if event.key == pg.K_r:
                 gameState.board = copy.deepcopy(original_board)
+            if event.key == pg.K_k:
+                gameState.board = remove_random_squares(gameState.board)
 
 def game_loop(gameState):
     get_events()
 
-    # Lisener.draw_grid(board)
     draw_grid(gameState.board)
-
+    # pprint(gameState.board)
     pg.display.update()
     pg.time.delay(200)
 
