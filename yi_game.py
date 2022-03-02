@@ -94,6 +94,7 @@ def get_events():
                 listener = DrawingListener()
                 # solution_board = solve_board(Solution.BFS, gameState.board, listener)
                 # gameState.board = solution_board
+                g = Solution(gameState.board, listener).BFS()
 
             if event.key == pg.K_r:
                 gameState.board = copy.deepcopy(original_board)
