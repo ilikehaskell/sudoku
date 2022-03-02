@@ -99,5 +99,3 @@ if __name__ == '__main__':
   solve_board(Solution.DFS, hard_board)
   solve_board(Solution.BFS, easy_board)
   solve_board(Solution.DFS, easy_board)
-
-  
