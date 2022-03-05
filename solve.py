@@ -1,6 +1,7 @@
 from pprint import pprint
 from typing import Any, List
 from collections import defaultdict, deque
+import copy
 import json
 
 def cross(A,B):
@@ -20,7 +21,7 @@ class Solution:
   def __init__(self, board: List[List[str]], lisener) -> None:
     self.lisener = lisener
     self.board = board
-
+    self.visited = set()
   def get_value(self, square, board):
     i, j = square
     return board[i][j]
@@ -48,6 +49,37 @@ class Solution:
 
       search(self.board, 0)
 
+  def k(self, square_ord, board):
+    square = (square_ord//9, square_ord%9)
+    possible_digits = []
+    for d in digits:
+      if d not in [self.get_value(p, board) for p in peers[square]]:
+        possible_digits += [d]
+    return possible_digits
+
+  def Greedy(self) -> None:
+      def search(board, found  = False):
+        if str(board).count('.') == 0:
+          return True
+        if str(board) in self.visited:
+            return
+        self.visited.add(str(board))
+
+        square_ords = [square_ord for square_ord in range(81) if self.get_value((square_ord//9, square_ord%9), board) == '.']
+        best_square_ord = sorted(square_ords, key = lambda square_ord: len(self.k(square_ord, board)))[0]
+        
+        square = (best_square_ord//9, best_square_ord%9)
+        for d in self.k(best_square_ord, board):
+          self.set_value(d, square, board)
+          found = search(board)
+          if found:
+            return True
+          self.set_value('.', square, board)
+
+      self.visited = set()
+      search(self.board)
+      self.visited = set()
+
   def BFS(self) -> Any:
     frontier = deque([json.dumps(self.board)])
     explored = set()
@@ -70,7 +102,7 @@ class Solution:
                   return True
                 frontier.append(child_state)
               self.set_value('.', square, node)
-              
+
 def test_if_solved(grid):
   if grid.find('.') != -1:
     return False
@@ -96,6 +128,9 @@ def solve_board(method, board, listener = None):
 if __name__ == '__main__':
   hard_board = [[".",".",".","7","4","8",".",".","."],["7",".",".",".",".",".",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7",".",".",".","2","4","."],[".","6","4",".","1",".","5","9","."],[".","9","8",".",".",".","3",".","."],[".",".",".","8",".","3",".","2","."],[".",".",".",".",".",".",".",".","6"],[".",".",".","2","7","5","9",".","."]]
   easy_board = [['.', '.', '.', '.', '4', '8', '6', '3', '2'], ['.', '.', '3', '6', '5', '2', '.', '1', '9'], ['4', '2', '6', '1', '3', '9', '8', '7', '5'], ['3', '5', '7', '9', '8', '6', '2', '4', '1'], ['2', '6', '4', '3', '1', '7', '5', '9', '8'], ['1', '9', '8', '5', '2', '4', '3', '6', '7'], ['9', '7', '5', '8', '6', '3', '1', '2', '4'], ['8', '3', '2', '4', '9', '1', '7', '5', '6'], ['6', '4', '1', '2', '7', '5', '9', '8', '3']]
-  solve_board(Solution.DFS, hard_board)
-  solve_board(Solution.BFS, easy_board)
-  solve_board(Solution.DFS, easy_board)
+  solve_board(Solution.DFS, copy.deepcopy(hard_board))
+  solve_board(Solution.Greedy, copy.deepcopy(hard_board))
+  solve_board(Solution.BFS, copy.deepcopy(easy_board))
+  solve_board(Solution.DFS, copy.deepcopy(easy_board))
+  solve_board(Solution.Greedy, copy.deepcopy(easy_board))
+

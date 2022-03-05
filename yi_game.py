@@ -103,7 +103,9 @@ def get_events():
             
             if event.key == pg.K_n:
                 # for _ in range(100):
-                print(next(g))
+                # print(
+                next(g)
+                    # )
 
 def game_loop(gameState):
     get_events()
