@@ -36,7 +36,7 @@ class Solution:
       def search(board, square_ord, found  = False):
         if square_ord == 81:
           return True
-        square = (square_ord//9, square_ord%9)
+        square = squares[square_ord]
         if self.get_value(square, board) != '.':
           return search(board, square_ord+1)
         for d in digits:
@@ -49,8 +49,7 @@ class Solution:
 
       search(self.board, 0)
 
-  def k(self, square_ord, board):
-    square = (square_ord//9, square_ord%9)
+  def get_possible_digits(self, square, board):
     possible_digits = []
     for d in digits:
       if d not in [self.get_value(p, board) for p in peers[square]]:
@@ -65,16 +64,15 @@ class Solution:
             return
         self.visited.add(str(board))
 
-        square_ords = [square_ord for square_ord in range(81) if self.get_value((square_ord//9, square_ord%9), board) == '.']
-        best_square_ord = sorted(square_ords, key = lambda square_ord: len(self.k(square_ord, board)))[0]
+        eligible_squares = [square for square in squares if self.get_value(square, board) == '.']
+        best_square = sorted(eligible_squares, key = lambda square_ord: len(self.get_possible_digits(square_ord, board)))[0]
         
-        square = (best_square_ord//9, best_square_ord%9)
-        for d in self.k(best_square_ord, board):
-          self.set_value(d, square, board)
+        for d in self.get_possible_digits(best_square, board):
+          self.set_value(d, best_square, board)
           found = search(board)
           if found:
             return True
-          self.set_value('.', square, board)
+          self.set_value('.', best_square, board)
 
       self.visited = set()
       search(self.board)
@@ -88,8 +86,7 @@ class Solution:
       explored.add(node_state)
       node = json.loads(node_state)
 
-      for square_ord in range(81):
-        square = (square_ord//9, square_ord%9)
+      for square in squares:
         if self.get_value(square, node) != '.':
           continue
         for d in digits:
